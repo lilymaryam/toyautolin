@@ -40,3 +40,19 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Add these styles */
+.process-button {
+  margin-top: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.process-button:hover {
+  background-color: #45a049;
+}
