@@ -56,3 +56,143 @@
 .process-button:hover {
   background-color: #45a049;
 }
+
+.tree-visualization-container {
+  margin-top: 30px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.tree-visualizer {
+  width: 100%;
+  min-height: 450px;
+}
+
+/* Fix for tree visualization header */
+.tree-visualizer h4 {
+  color: #333;
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+/* Tree node styling */
+.rd3t-node circle {
+  fill: #4CAF50;
+  stroke: #2E7D32;
+  stroke-width: 1.5px;
+}
+
+.rd3t-node text {
+  font-size: 12px;
+  fill: #333;
+}
+
+.rd3t-link {
+  stroke: #a5a5a5;
+  stroke-width: 1.5px;
+}
+
+.simple-tree-view {
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.node-list {
+  margin-top: 15px;
+}
+
+.tree-node {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: white;
+}
+
+.node-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.node-name {
+  font-weight: bold;
+}
+
+.node-badge {
+  background-color: #4682b4;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.tree-node:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.tree-note {
+  font-style: italic;
+  margin-top: 15px;
+  color: #666;
+  font-size: 12px;
+}
+
+.tree-table-container {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.tree-table-container h4 {
+  margin-bottom: 10px;
+  color: #333;
+  text-align: left;
+}
+
+.table-wrapper {
+  max-height: 500px;
+  overflow-y: auto;
+  margin-top: 15px;
+}
+
+.node-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  color: #000000; /* Explicitly set text color to black */
+}
+
+.node-table th {
+  background-color: #f2f2f2;
+  padding: 10px;
+  text-align: left;
+  position: sticky;
+  top: 0;
+  color: #000000; /* Ensure header text is black */
+}
+
+.node-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #ddd;
+  color: #000000; /* Ensure cell text is black */
+}
+
+.node-table .tip-node {
+  background-color: rgba(255, 99, 71, 0.1);
+}
+
+.node-table .internal-node {
+  background-color: rgba(70, 130, 180, 0.1);
+}
+
+.node-table tr:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}

@@ -2,6 +2,9 @@ import { useState } from 'react'
 import './App.css'
 import FileDropzone from './components/FileDropzone.jsx'
 import { processJsonlGz } from './components/jsonlProcess.jsx'
+import TreeVisualizer from './components/TreeVisualizer.jsx'
+import AutolinFuncs from './components/AutolinFuncs.jsx'
+
 
 function App() {
   const [selectedFile, setSelectedFile] = useState(null)
@@ -29,13 +32,48 @@ function App() {
     // Read the file as ArrayBuffer
     const fileReader = new FileReader();
 
-    fileReader.onload = (event) => {
-      setProcessingStatus({ 
-        message: "File loaded successfully, ready to process" 
-      });
-      console.log("File loaded as ArrayBuffer");
+    // WITH THIS FUNCTION
+    fileReader.onload = async (event) => {
+      try {
+        setProcessingStatus({ 
+          message: "File loaded successfully, starting to process..." 
+        });
+        console.log("File loaded as ArrayBuffer");
+        
+        // Get the file data from the event
+        const fileData = event.target.result;
+        
+        // Process the file with processJsonlGz
+        await processJsonlGz({
+          data: fileData,
+          source: 'file',
+          filename: selectedFile.name,
+          onProgress: (progress) => {
+            // Update status with progress information
+            setProcessingStatus(progress);
+          },
+          onComplete: (result) => {
+            // Handle successful completion
+            setProcessingStatus({ message: "Processing complete!" });
+            setProcessedData(result.data);
+            console.log("Processing complete:", result);
+          },
+          onError: (err) => {
+            // Handle errors during processing
+            setError(err);
+            setProcessingStatus({ message: "Error processing file" });
+            console.error("Processing error:", err);
+          }
+        });
+      } catch (err) {
+        // Handle any errors in this function
+        setError({ message: err.message });
+        setProcessingStatus({ message: "Error processing file" });
+        console.error("Error:", err);
+      }
     };
 
+    fileReader.readAsArrayBuffer(selectedFile);
   }
   
   // Update the button to use this function
@@ -84,20 +122,62 @@ function App() {
           <p>{processingStatus.message}</p>
         </div>
       )}
+      {processedData && (
+        <div className="processed-data">
+          <h3>Tree Data:</h3>
+          
+          {processedData.records && processedData.records.length > 0 && (
+            <div className="data-section">
+              <h4>Node Overview:</h4>
+              <p>Successfully processed {processedData.records.length.toLocaleString()} tree nodes</p>
+              
+              <h5>Node Properties:</h5>
+              <ul>
+                {Object.keys(processedData.records[0]).map(key => (
+                  <li key={key}>{key}</li>
+                ))}
+              </ul>
+              
+              {/* Look for common tree node properties */}
+              <h5>Tree Structure:</h5>
+              <ul className="tree-info">
+                {processedData.records[0].id && (
+                  <li>Node ID field: <code>id</code></li>
+                )}
+                {processedData.records[0].parent_id && (
+                  <li>Parent reference: <code>parent_id</code></li>
+                )}
+                {processedData.records[0].children && (
+                  <li>Children field: <code>children</code> (nested structure)</li>
+                )}
+                {processedData.records[0].name && (
+                  <li>Node name field: <code>name</code></li>
+                )}
+                {processedData.records[0].type && (
+                  <li>Node type field: <code>type</code></li>
+                )}
+                {processedData.records[0].level !== undefined && (
+                  <li>Depth/level field: <code>level</code></li>
+                )}
+              </ul>
+              
+              
+            </div>
+          )}
+        </div>
+      )}
 
-
-
-      {/*<div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>*/}
+      {processedData && processedData.records && processedData.records.length > 0 && (
+        <div className="tree-visualization-container">
+          <TreeVisualizer treeData={processedData} />
+        </div>
+      )}
+      {processedData && processedData.records && processedData.records.length > 0 && (
+        <>
+          console.log("Tree data:", processedData)
+          <AutolinFuncs treeData={processedData} />
+        </>
+      )}
     </>
   )
 }
