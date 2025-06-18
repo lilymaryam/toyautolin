@@ -1,5 +1,7 @@
 import pako from 'pako'; // You'll need to: npm install pako
 
+//is this named wrong? is this a js file or a jsx file?
+
 /**
  * Process a JSONL.gz file and parse its contents,
  * then build a tree from the nodes based on `node_id` and `parent_id`.
@@ -108,6 +110,7 @@ export const processJsonlGz = async (options) => {
       });
 
       // If no root was found, try to identify most likely root
+      /*
       if (!root && records.length > 0) {
         console.warn("No explicit root node found, searching for node with most descendants");
         
@@ -139,7 +142,7 @@ export const processJsonlGz = async (options) => {
         console.warn("No root node identified, using first node as root");
         root = nodes[records[0].node_id];
       }
-
+      */
       return root;
     };
 

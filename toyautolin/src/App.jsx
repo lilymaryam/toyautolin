@@ -54,9 +54,9 @@ function App() {
           },
           onComplete: (result) => {
             // Handle successful completion
-            setProcessingStatus({ message: "Processing complete!" });
+            setProcessingStatus({ message: "Read File complete!" });
             setProcessedData(result.data);
-            console.log("Processing complete:", result);
+            console.log("File read complete:");
           },
           onError: (err) => {
             // Handle errors during processing
@@ -92,7 +92,7 @@ function App() {
         </a>
       </div>
       */}
-      <h1>Hello World</h1>
+      <h1>Autolin Prototype</h1>
       {/* Add the FileDropzone component here */}
       <FileDropzone 
         onFileSelect={handleFileSelect}
@@ -128,6 +128,7 @@ function App() {
           
           {processedData.records && processedData.records.length > 0 && (
             <div className="data-section">
+              {/*}
               <h4>Node Overview:</h4>
               <p>Successfully processed {processedData.records.length.toLocaleString()} tree nodes</p>
               
@@ -137,8 +138,8 @@ function App() {
                   <li key={key}>{key}</li>
                 ))}
               </ul>
-              
-              {/* Look for common tree node properties */}
+              */}
+              {/*}
               <h5>Tree Structure:</h5>
               <ul className="tree-info">
                 {processedData.records[0].id && (
@@ -160,22 +161,25 @@ function App() {
                   <li>Depth/level field: <code>level</code></li>
                 )}
               </ul>
+              */}
               
               
             </div>
           )}
+          
         </div>
       )}
-
+      
       {processedData && processedData.records && processedData.records.length > 0 && (
         <div className="tree-visualization-container">
           <TreeVisualizer treeData={processedData} />
         </div>
       )}
+       
       {processedData && processedData.records && processedData.records.length > 0 && (
         <>
           console.log("Tree data:", processedData)
-          <AutolinFuncs treeData={processedData} />
+          <AutolinFuncs treeData={processedData} /> 
         </>
       )}
     </>

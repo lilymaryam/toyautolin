@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { analyzeTree } from "../utils/treeFunctions"; // Add this import
 
-
+//this is might be the wrong way to implement but i want to write the javascript code for autolin
 const TreeProcessor = ({ treeData }) => {
   const [analysisResults, setAnalysisResults] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -29,6 +29,7 @@ const TreeProcessor = ({ treeData }) => {
   }, [treeData]);
 
   return (
+    //this might be a mistake, this is a react component but its not in the main react element
     <div className="tree-processor">
       <h3>Tree Data Analysis</h3>
 

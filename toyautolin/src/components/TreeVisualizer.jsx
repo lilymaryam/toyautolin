@@ -1,5 +1,5 @@
 import React from 'react';
-
+//this is currently not in use and can prpobably be removed at some point
 const TreeVisualizer = ({ treeData }) => {
   // Make sure we have data to display
   if (!treeData || !treeData.records || treeData.records.length === 0) {
