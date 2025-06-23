@@ -165,7 +165,13 @@ const searchForLins = (root) => {
 
 const getDistsToRoot = (nodeMap, lineageRoot) => {
     console.log("Getting distances to root for lineage:", lineageRoot, nodeMap[lineageRoot]);
-    
+    const distances = {[lineageRoot]: 0};
+    const recursiveHelper = (node) => {
+        console.log('node', node, node.node_id, distances)
+        const currentDist = distances[node.node_id]
+        console.log('current dist', node, node.node_id, currentDist)
+    }
+    recursiveHelper(nodeMap[lineageRoot]);
 }
 
 //this is your main analysis function it gets exported so it should call everything 
