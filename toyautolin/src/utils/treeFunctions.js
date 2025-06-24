@@ -163,6 +163,8 @@ const searchForLins = (root) => {
     return mostRecentAnnotations
 }
 
+
+//confirm that distances are correct 
 const getDistsToRoot = (nodeMap, lineageRoot) => {
     console.log("Getting distances to root for lineage:", lineageRoot, nodeMap[lineageRoot]);
     const distances = {[lineageRoot]: 0};
@@ -170,8 +172,16 @@ const getDistsToRoot = (nodeMap, lineageRoot) => {
         console.log('node', node, node.node_id, distances)
         const currentDist = distances[node.node_id]
         console.log('current dist', node, node.node_id, currentDist)
+        for (let c in node.children) {
+            console.log('c', typeof(c), node.children[c], ';en', node.children[c].mutations.length)
+            //tihs may need to be upgraded later if sample or mutation weights are used 
+            const dist = currentDist + node.children[c].mutations.length
+            distances[node.children[c].node_id] = dist
+            recursiveHelper(node.children[c]);
+        }
     }
     recursiveHelper(nodeMap[lineageRoot]);
+    return distances;
 }
 
 //this is your main analysis function it gets exported so it should call everything 
@@ -202,6 +212,7 @@ export const analyzeTree = async (treeData) => {
             }
             //for each outer annotation, get distance of samples to root (root of current annotation i beleive)
             const distsToRoot = getDistsToRoot(nodeMap, mostRecentAnnotations[a])
+            console.log('distsToRoot', distsToRoot)
         }
 
         
