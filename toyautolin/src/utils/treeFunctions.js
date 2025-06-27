@@ -163,8 +163,6 @@ const searchForLins = (root) => {
     return mostRecentAnnotations
 }
 
-
-//confirm that distances are correct 
 const getDistsToRoot = (nodeMap, lineageRoot) => {
     console.log("Getting distances to root for lineage:", lineageRoot, nodeMap[lineageRoot]);
     const distances = {[lineageRoot]: 0};
@@ -182,6 +180,53 @@ const getDistsToRoot = (nodeMap, lineageRoot) => {
     }
     recursiveHelper(nodeMap[lineageRoot]);
     return distances;
+}
+
+//this currently will only assign lineages from scratch, will need updates to handle pre-annotated lineages
+//need to check this , checked briefly , further checks useful
+const getSumAndCount = (rbfs) => {
+    const sumAndCounts = {}
+    //can this be a const?
+    let leafCount = 0
+    for (let n in rbfs) {
+        //console.log('sum and count', rbfs[n].name, rbfs[n].node_id, rbfs[n].mutations.length)
+        if (rbfs[n].is_tip) {
+            leafCount += 1
+            //console.log('rbfs', rbfs[n].name, rbfs[n].node_id, leafCount)
+            //only count as 1 if unweighted
+            //const?
+            const count = 1
+            //sum of node is branch length unless weighting is added 
+            // count is number of descs? 
+            sumAndCounts[rbfs[n].node_id] = [rbfs[n].mutations.length, count]
+        }
+        //for internal nodes
+        else {
+            let totalCount = 0
+            let totalSum = 0
+            for (let c in rbfs[n].children) {
+                //maybe turn this into a function later?
+                console.log('yes',c, rbfs[n].children[c], rbfs[n].children[c].node_id, sumAndCounts[rbfs[n].children[c].node_id])
+                totalCount += sumAndCounts[rbfs[n].children[c].node_id][1]
+                totalSum += sumAndCounts[rbfs[n].children[c].node_id][0]
+            }
+            //do i need a contingency for totalCount being 0?
+            if (totalCount > 0) {
+                /*total path length is computed as the total path lengths to each child plus the length of the current node TIMES the number of samples.
+                #this is because total path length is not the same as tree parsimony- some mutations are part of many sample paths
+                #for a given sample to its parent, the total path length is just the number of mutations (as computed above)
+                #but for an internal node with two leaf children's path length with respect to its parent, 
+                #its equal to the sum of the two child's path lengths plus 2 times its mutations, since those mutations are shared among 2 samples
+                #this logic applies as we move further up the tree.*/
+                sumAndCounts[rbfs[n].node_id] = [totalSum + rbfs[n].mutations.length * totalCount, totalCount]
+            }
+
+            //console.log('internal node', rbfs[n].name, rbfs[n].node_id, rbfs[n].mutations.length)
+
+        }
+
+    }
+    return sumAndCounts;
 }
 
 //this is your main analysis function it gets exported so it should call everything 
@@ -213,7 +258,31 @@ export const analyzeTree = async (treeData) => {
             //for each outer annotation, get distance of samples to root (root of current annotation i beleive)
             const distsToRoot = getDistsToRoot(nodeMap, mostRecentAnnotations[a])
             console.log('distsToRoot', distsToRoot)
-        }
+            //can this be a const? 
+            //at some point this needs to have the option to recursively assign lineages
+            const inner_loop = true 
+            while (inner_loop) {
+                // this will need to be more complicated once labels are preannoated and weighting is added
+                const sumAndCounts = getSumAndCount(rbfs)
+                
+
+                //this is where you will need to do the inner loop
+                //for each node in rbfs, get the mutations and samples
+                //for (let n in rbfs) {
+                //    console.log('rbfs', rbfs[n].name, rbfs[n].node_id, rbfs[n].mutations.length)
+                    //console.log('rbfs', rbfs[n].name, rbfs[n].node_id, rbfs[n].samples.length)
+                    //console.log('rbfs', rbfs[n].name, rbfs[n].node_id, rbfs[n].mutations.length)
+                    //console.log('rbfs', rbfs[n].name, rbfs[n].node_id, rbfs[n].samples.length)
+                
+                //will likely need to break this out into a function later
+                //console.log('inner loop')
+                console.log('inner loop done')
+                
+
+                break
+                }
+            }
+        
 
         
         //need to prevent infinite loop
