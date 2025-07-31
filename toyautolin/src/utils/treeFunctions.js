@@ -7,13 +7,17 @@
 //this is currently all of the javascript needed for the autoin alg. all of the react is poorly functioning and will need help later
 
 const makeNodeMap = (treeData) => {
+    let leafCount = 0
     const nodeMap = {}
     treeData.records.forEach(node => {
-    nodeMap[node.node_id] = node;
-    // Initialize children array for each node
+        if (node.is_tip) {
+            leafCount += 1
+        }
+        nodeMap[node.node_id] = node;
+        // Initialize children array for each node
         node.children = [];
         //console.log(node.node_id, node.children)
-    });
+    })
     let root = null
     treeData.records.forEach (node => {
         if (node.parent_id == node.node_id) {
@@ -35,7 +39,8 @@ const makeNodeMap = (treeData) => {
     */  
    return {
         nodeMap,
-        root
+        root,
+        leafCount
     }
    
 
@@ -68,7 +73,8 @@ const reverseBFS = (treeData) => {
 const reverseBFS = (nodeMap, root) => {
     // First, build the node map and get the root
     //const {nodeMap, root} = makeNodeMap(treeData);
-    console.log("Starting reverse BFS with root:", root ? root.node_id : "None")
+    
+    //console.log("Starting reverse BFS with root:", root ? root.node_id : "None")
     
     // this might need to have better error handling later
     if (!root) {
@@ -159,7 +165,8 @@ const reverseBFS = (nodeMap, root) => {
 // i will need to build this out later
 const searchForLins = (root) => {
     //implement the double nested loop here with helper functions above
-    const mostRecentAnnotations = {'L': root.node_id}
+    //const mostRecentAnnotations = {'L': root.node_id}
+    const mostRecentAnnotations = {}
     return mostRecentAnnotations
 }
 
@@ -167,11 +174,11 @@ const getDistsToRoot = (nodeMap, lineageRoot) => {
     console.log("Getting distances to root for lineage:", lineageRoot, nodeMap[lineageRoot]);
     const distances = {[lineageRoot]: 0};
     const recursiveHelper = (node) => {
-        console.log('node', node, node.node_id, distances)
+        //console.log('node', node, node.node_id, distances)
         const currentDist = distances[node.node_id]
-        console.log('current dist', node, node.node_id, currentDist)
+        //console.log('current dist', node, node.node_id, currentDist)
         for (let c in node.children) {
-            console.log('c', typeof(c), node.children[c], ';en', node.children[c].mutations.length)
+            //console.log('c', typeof(c), node.children[c], ';en', node.children[c].mutations.length)
             //tihs may need to be upgraded later if sample or mutation weights are used 
             const dist = currentDist + node.children[c].mutations.length
             distances[node.children[c].node_id] = dist
@@ -207,7 +214,7 @@ const getSumAndCount = (rbfs, skipSet) => {
             let totalSum = 0
             for (let c in rbfs[n].children) {
                 //maybe turn this into a function later?
-                console.log('yes',c, rbfs[n].children[c], rbfs[n].children[c].node_id, sumAndCounts[rbfs[n].children[c].node_id])
+                //console.log('yes',c, rbfs[n].children[c], rbfs[n].children[c].node_id, sumAndCounts[rbfs[n].children[c].node_id])
                 totalCount += sumAndCounts[rbfs[n].children[c].node_id][1]
                 totalSum += sumAndCounts[rbfs[n].children[c].node_id][0]
             }
@@ -230,11 +237,11 @@ const getSumAndCount = (rbfs, skipSet) => {
     return sumAndCounts;
 }
 
-const evaluateCandidates= (candidate, sumAndCounts, distsToRoot) => {
+const evaluateCandidates= (candidate, sumAndCounts, distsToRoot, ancestralNode) => {
     //if there is a sum that does not have sumAndCounts this will break
     const nodeSum = sumAndCounts[candidate.node_id][0]
     const nodeCount = sumAndCounts[candidate.node_id][1]
-    console.log('nodeSum', nodeSum, 'nodeCount', nodeCount)
+    console.log(candidate.node_id, 'nodeSum', nodeSum, 'nodeCount', nodeCount)
     //add evaluation for sum being less than minimum (not right now)
     //this needs to be refined later
     
@@ -247,8 +254,10 @@ const evaluateCandidates= (candidate, sumAndCounts, distsToRoot) => {
     console.log('made it here')
 
 
-    const candidateToParent = distsToRoot[candidate.node_id] - distsToRoot[candidate.parent_id]
+    const candidateToParent = distsToRoot[candidate.node_id] - distsToRoot[ancestralNode]
+
     const meanDistance = nodeSum / nodeCount
+    console.log(candidate.node_id, 'candidateToParent', candidateToParent, 'meanDistance', meanDistance)
     let candidateVal
     if (meanDistance + candidateToParent == 0) {
         candidateVal = 0
@@ -263,14 +272,16 @@ const evaluateCandidates= (candidate, sumAndCounts, distsToRoot) => {
     
 }
 
-const evaluateLineages = (rbfs, sumAndCounts, distsToRoot, skipSet) => {
+const evaluateLineages = (rbfs, sumAndCounts, distsToRoot, skipSet, ancestralNode) => {
+    console.log('evaluating lineages', skipSet)
     const goodCandidates = {}
     for (let node in rbfs) {
         //console.log('evaluating node', node,  rbfs[node].name, rbfs[node].node_id, rbfs[node].mutations.length)
         //this will need to ignore certain nodes at some point
         if  (!rbfs[node].is_tip && !skipSet.has(rbfs[node].node_id)) {
 
-            const candidateVal = evaluateCandidates(rbfs[node], sumAndCounts, distsToRoot)
+            const candidateVal = evaluateCandidates(rbfs[node], sumAndCounts, distsToRoot, ancestralNode)
+            console.log('candidateVal', rbfs[node].node_id, candidateVal)
             if (candidateVal > 0) {
                 goodCandidates[rbfs[node].node_id] = candidateVal
                 //goodCandidates.push(candidateVal)
@@ -332,10 +343,10 @@ const getAncestors = (nodeMap, nodeId) => {
 const getSkipSet = (nodeMap, mostRecentAnnotations) => {
     const skipSet = new Set()
     for (let a in mostRecentAnnotations) {
-        console.log('a', a, 'mostRecentAnnotations[a]', mostRecentAnnotations[a])
+        //console.log('a', a, 'mostRecentAnnotations[a]', mostRecentAnnotations[a])
         const ancestors = getAncestors(nodeMap, mostRecentAnnotations[a])
         for (let anc of ancestors) {
-            console.log('anc', anc)
+            //console.log('anc', anc)
             skipSet.add(anc)
         }
     }
@@ -346,16 +357,18 @@ const getSkipSet = (nodeMap, mostRecentAnnotations) => {
 export const analyzeTree = async (treeData) => {
     console.log("is this working", treeData)
     // do i need a node map? perhaps not
-    const {nodeMap, root} =  makeNodeMap(treeData)
+    const {nodeMap, root, leafCount} =  makeNodeMap(treeData)
     //console.log("Starting reverse BFS with root:", root ? root.node_id : "None")
 
     //should this take root? maybe not the best option, just temporary
     const mostRecentAnnotations = searchForLins(root)
-    const originalAnnotations = new Set(Object.keys(mostRecentAnnotations));
+    console.log("Most recent annotations found:", mostRecentAnnotations)
+    const originalAnnotations = new Set(Object.keys(mostRecentAnnotations))
     //this will need to be tested more extensively later
     const skipSet = getSkipSet(nodeMap, mostRecentAnnotations)
     console.log("Skip set:", skipSet)
     console.log("Most recent annotations:", mostRecentAnnotations)
+    mostRecentAnnotations['L'] = root.node_id
     //const result = reverseBFS(nodeMap,root);
     let loop = true
     while (loop) {
@@ -363,7 +376,7 @@ export const analyzeTree = async (treeData) => {
         //method currently assusmes no annotations FIX LATER
         const newAnnotations = {}
         for (let a in mostRecentAnnotations) {
-            const serial = 1
+            let serial = 1
             console.log('a', a, 'mostRecentAnnotations[a]', mostRecentAnnotations[a])
             const rbfs = reverseBFS(nodeMap, nodeMap[mostRecentAnnotations[a]])
             // will likely need to take into account sample weights eventually
@@ -379,13 +392,21 @@ export const analyzeTree = async (treeData) => {
             //for each outer annotation, get distance of samples to root (root of current annotation i beleive)
             const distsToRoot = getDistsToRoot(nodeMap, mostRecentAnnotations[a])
             console.log('distsToRoot', distsToRoot)
+
+            //const originalArray = [1, 2, 3, 4];
+            const labeled = new Set(skipSet)
+            console.log('labeled', labeled)
+            //labeled.add('ys')
+            //console.log('labeled', labeled)
+            console.log(skipSet)
+            
             //can this be a const? 
             //at some point this needs to have the option to recursively assign lineages
             const inner_loop = true 
             while (inner_loop) {
                 // this will need to be more complicated once labels are preannoated and weighting is added
                 const sumAndCounts = getSumAndCount(rbfs, skipSet)
-                const {bestNodeId, bestValue} = evaluateLineages(rbfs, sumAndCounts, distsToRoot, skipSet)
+                const {bestNodeId, bestValue} = evaluateLineages(rbfs, sumAndCounts, distsToRoot, skipSet, mostRecentAnnotations[a])
                 console.log('bestNode', bestNodeId, 'bestScore', bestValue)
                 console.log('a', a, 'mostRecentAnnotations[a]', mostRecentAnnotations[a])
                 let prefix = ''
@@ -409,25 +430,34 @@ export const analyzeTree = async (treeData) => {
                     newName = prefix + "." + String(serial)
                     console.log('newName', newName, 'serial', serial)
                 }
-
+                console.log('here bitch', bestNodeId, bestValue)
+                if (bestValue <= 0 ) {
+                    console.log('breaking inner loop')
+                    break
+                }
                 const ancestors = getAncestors(nodeMap, bestNodeId)
+                console.log('here bitch again', bestNodeId)
                 for (let anc in ancestors) {
                     console.log('anc', ancestors[anc])
                     skipSet.add(ancestors[anc])
                 }
                 newAnnotations[newName] = bestNodeId
                 const leaves = getLeaves(nodeMap, bestNodeId)
-                console.log('leaves', leaves)
+                console.log('leafCount', leafCount)
                 console.log('skipSet', skipSet)
                 //START HERE LILY
-                for (l of leaves)
+                for (let l of leaves)
                     labeled.add(l)
-                //if len(labeled) >= leaf_count * args.cutoff:
+                console.log('labeled', labeled.size, leaves.size)
+                if (labeled.size >= leafCount * 0.95){
+                    console.log('95% of leaves labeled, breaking inner loop')
                     break
+                }
+                    
                 serial += 1
 
                 //this shouldn't break we need conditions 
-                break
+                //break
                 }
             }
         
@@ -436,9 +466,10 @@ export const analyzeTree = async (treeData) => {
         //need to prevent infinite loop
         //will use this for recursive calls later
         loop = false
+    console.log("new annotations", newAnnotations)
 
     }
-    console.log("result", result)
+
 
     //will likely need to improve return object later
     return {
